@@ -16,7 +16,6 @@
 typedef struct _Args {
     const char *input_path;
     const char *output_path;
-    int is_only;
     int is_version;
 } Args;
 
@@ -47,7 +46,6 @@ int main(int argc, const char **argv) {
     Args args = {
         .input_path = NULL,
         .output_path = NULL,
-        .is_only = 0,
         .is_version = 0
     };
 
@@ -61,8 +59,6 @@ int main(int argc, const char **argv) {
                    "path to the image.", NULL, 0, 0),
         OPT_STRING('o', "output", &args.output_path,
                    "provide an output path.", NULL, 0, 0),
-        OPT_BOOLEAN('y', "only", &args.is_only,
-                    "use base gruvbox material theme.", NULL, 0, 0),
         OPT_BOOLEAN('v', "version", &args.is_version,
                     "print version and exit.", NULL, 0, 0),
         OPT_HELP(),
