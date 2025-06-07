@@ -1,6 +1,6 @@
-# img_in_fever (iif)
+<h1>img_in_fever <code>(iif)</code></h1>
 
-iif, a tool to convert any image to a warm and eye-appealing image.
+`iif`, a tool to convert any image to a warm and eye-appealing image.
 the program the
 [gruvbox-material](https://github.com/sainnhe/gruvbox-material)
 theme along with my hand crafted colors to quantize any image to
