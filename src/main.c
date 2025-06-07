@@ -52,7 +52,7 @@ int main(int argc, const char **argv) {
     };
 
     const char *const usages[] = {
-        "colorconv [arguments] [parameters]",
+        "iif [arguments] [parameters]",
         NULL
     };
 
@@ -82,7 +82,7 @@ int main(int argc, const char **argv) {
     }
 
     if (args.is_version) {
-        printf("colorconv %s\n", VERSION);
+        printf("iif %s\n", VERSION);
         return 0;
     }
 
