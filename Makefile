@@ -1,7 +1,7 @@
 SRC:=src/*.c
 LIBS:=-largparse -lm
 LIBS_DIR:=-L"lib/"
-EXE:=colorconv
+EXE:=iif
 
 all:
 	$(CC) $(SRC) -o $(EXE) $(LIBS_DIR) $(LIBS)
