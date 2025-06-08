@@ -1,4 +1,4 @@
-<h1>img_in_fever <code>(iif)</code></h1>
+<h1>image_in_<i>fever</i> <code>(iif)</code></h1>
 
 `iif`, a tool to convert any image to a warm and eye-appealing image.
 the program uses the
