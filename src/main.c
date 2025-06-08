@@ -90,16 +90,16 @@ int main(int argc, const char **argv) {
     Image img;
     loadImage(&img, args.input_path);
 
+    if (img.data == NULL) {
+        fprintf(stderr, "error: failed to load image.\n");
+        return EXIT_ERR;
+    }
+
     fprintf(stdout,
             "Image spec:\n"
             "    dimensions: %dx%d\n"
             "    color channels: %d\n",
             img.width, img.height, img.bytes);
-
-    if (img.data == NULL) {
-        fprintf(stderr, "error: failed to load image.\n");
-        return EXIT_ERR;
-    }
 
     quantizeImage(&img, colors, colors_len);
 
@@ -137,15 +137,15 @@ void writeImage(Image *self, const char *path) {
         stbi_write_jpg(path, self->width, self->height, self->bytes,
                        self->data, 90);
     }
-    else if (strcmp(type, "png")) {
+    else if (strcmp(type, "png") == 0) {
         stbi_write_png(path, self->width, self->height, self->bytes,
                        self->data, self->width * self->bytes);
     }
-    else if (strcmp(type, "bmp")) {
+    else if (strcmp(type, "bmp") == 0) {
         stbi_write_bmp(path, self->width, self->height, self->bytes,
                        self->data);
     }
-    else if (strcmp(type, "tga")) {
+    else if (strcmp(type, "tga") == 0) {
         stbi_write_tga(path, self->width, self->height, self->bytes,
                        self->data);
     }

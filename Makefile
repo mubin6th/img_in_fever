@@ -7,4 +7,4 @@ all:
 	$(CC) $(SRC) -o $(EXE) $(LIBS_DIR) $(LIBS)
 
 clean:
-	rm -fr ./colorconv
+	rm -fr ./iif
