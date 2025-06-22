@@ -29,16 +29,16 @@ typedef struct _Image {
 const int EXIT_ERR = 255;
 const char *const VERSION = "v1.0.0-dev";
 
+void getWritePath(const char *path, char *out);
 void loadImage(Image *self, const char *path);
 void writeImage(Image *self, const char *path);
 void freeImage(Image *self);
 // colors must be RGB compatible.
 uint32_t squaredEuclidianDistance(const uint8_t *color1,
                                   const uint8_t *color2);
-// color is 24 bit color divided across 3 8bit values.
+// color is 24 bit divided across 3 8bit values.
 uint8_t *getClosestColor(uint8_t *color, const uint8_t *list,
                          size_t list_size);
-// quantizer expects the image to be of type IMG_FMT_RGBA32.
 void quantizeImage(Image *img, const uint8_t *color_list,
                    size_t color_list_size);
 
@@ -78,7 +78,7 @@ int main(int argc, const char **argv) {
     }
 
     if (args.is_version) {
-        printf("iif %s\n", VERSION);
+        fprintf(stdout, "iif %s\n", VERSION);
         return 0;
     }
 
@@ -103,9 +103,45 @@ int main(int argc, const char **argv) {
 
     quantizeImage(&img, colors, colors_len);
 
-    writeImage(&img, "test.png");
+    char write_path[1 << 7];
+    getWritePath(args.input_path, write_path);
+
+    writeImage(&img, write_path);
     freeImage(&img);
     return 0;
+}
+
+void getWritePath(const char *path, char *out) {
+    char path_separator =
+#ifdef _WIN32
+    '\\'
+#else
+    '/'
+#endif
+    ;
+
+    size_t ext_idx = 0;
+    size_t name_idx;
+
+    size_t path_size = strlen(path);
+
+    for (size_t i = path_size - 1; i >= 0; i--) {
+        if (path[i] == '.' && ext_idx == 0) {
+            ext_idx = i + 1;
+        }
+        else if (path[i] == path_separator) {
+            name_idx = i + 1;
+            break;
+        }
+    }
+
+    for (size_t i = name_idx; i < ext_idx - 1; i++) {
+        *out = path[i];
+        out++;
+    }
+
+    strcat(out, "_by_iif");
+    strcat(out, &path[ext_idx - 1]);
 }
 
 void loadImage(Image *self, const char *path) {
