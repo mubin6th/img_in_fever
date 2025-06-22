@@ -140,6 +140,8 @@ void getWritePath(const char *path, char *out) {
         out++;
     }
 
+    *out = '\0';
+
     strcat(out, "_by_iif");
     strcat(out, &path[ext_idx - 1]);
 }

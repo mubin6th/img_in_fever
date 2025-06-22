@@ -71,9 +71,9 @@ int main(int argc, char **argv) {
     fclose(file_ptr);
 
     fprintf(stdout,
-            "#include \"%s.h\"\n\nsize_t colors_len = %lu;\n"
+            "#include \"colors.h\"\n\nsize_t colors_len = %lu;\n"
             "unsigned char colors[%lu] = {\n   ",
-            argv[1], colors_len * 3, colors_len * 3);
+            colors_len * 3, colors_len * 3);
 
     for (size_t i = 0; i < colors_len; i++) {
         if (i % 3 == 0 && i != 0) {
