@@ -26,13 +26,21 @@ int main(int argc, char **argv) {
                                      "it is not a color.\n";
 
     uint32_t crnt_color;
-    uint32_t colors[256];
+    uint32_t colors[1 << 10];
     size_t colors_len = 0;
 
     while (fgets(line_buf, sizeof(line_buf), file_ptr) != NULL) {
         crnt_line++;
 
         size_t line_len = strlen(line_buf);
+
+        if ((line_len > 0 && line_buf[0] == '\n') ||
+            (line_len >= 3 &&
+            line_buf[0] == '/' && line_buf[1] == '/'))
+        {
+            continue;
+        }
+
         if (line_len != 8 || line_buf[0] != '#') {
             fprintf(stderr, line_not_color_msg, crnt_line);
             continue;
