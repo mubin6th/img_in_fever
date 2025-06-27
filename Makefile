@@ -1,10 +1,11 @@
 SRC:=src/*.c
-LIBS:=-largparse -lm
-LIBS_DIR:=-L"lib/"
+LIBS:= -lm
+SRC_LIBS:=lib/argparse.c
+INCLUDE_DIR:=-I"include/"
 EXE:=iif
 
 all:
-	$(CC) $(SRC) -o $(EXE) $(LIBS_DIR) $(LIBS)
+	$(CC) $(SRC) $(SRC_LIBS) -o $(EXE) $(LIBS) $(INCLUDE_DIR)
 
 clean:
 	rm -fr ./iif

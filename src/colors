@@ -16,23 +16,61 @@
 #8b5a2b
 
 // my custom colors
+// black
+#050505
 #101010
-#1b1917
-#2b2723
-#3d3832
-#554e46
+#2a2622
+#413b35
+#524b43
 
-#a69a82
-#baac93
-#c9bca3
-#d5c9b3
-#dcd2c0
+// white
+#6a5f4f
+#877961
+#a9997f
+#c5b49a
+#dcccb2
 
-#554e43
-#6c6456
-#7e7361
-#96876f
-#9f9079
+// brown
+#63513b
+#836949
+#a17f55
+#bc986d
+#d3b289
+
+// green
+#586835
+#6c7c45
+#84955a
+#a4b774
+#bccd8f
+
+// blue
+#3d615f
+#557775
+#6d9895
+#8ab1ae
+#abcecb
+
+// yellow
+#906012
+#b27a21
+#c99239
+#d9ab62
+#e8c387
+
+// orange
+#9a5b27
+#af6a31
+#c98146
+#d59460
+#e3ae82
+
+// purple
+#8a516b
+#a4587a
+#ba698d
+#c881a1
+#d58eae
 
 // the gruvbox_material color scheme:
 #141617
