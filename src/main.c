@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef __AVX2__
+#include <immintrin.h>
+#endif
+
 #include "colors.h"
 
 #include "../include/argparse.h"
@@ -26,6 +30,12 @@ typedef struct _Image {
     int bytes;
 } Image;
 
+#ifdef __AVX2__
+typedef struct _SimdRgb {
+    __m256i r, g, b;
+} SimdRgb;
+#endif
+
 const int EXIT_ERR = 255;
 const char *const VERSION = "v1.0.0-dev";
 
@@ -33,12 +43,26 @@ void getWritePath(const char *path, char *out);
 void loadImage(Image *self, const char *path);
 void writeImage(Image *self, const char *path);
 void freeImage(Image *self);
+
+#ifdef __AVX2__
+void simdRgbInit(SimdRgb *self, const uint8_t *colors_16);
+void simdRgbInitFromScalar(SimdRgb *self, const uint8_t *color);
+#endif
+
 // colors must be RGB compatible.
-uint32_t squaredEuclidianDistance(const uint8_t *color1,
-                                  const uint8_t *color2);
+uint32_t manhattanDistance(const uint8_t *color1,
+                           const uint8_t *color2);
 // color is 24 bit divided across 3 8bit values.
 uint8_t *getClosestColor(uint8_t *color, const uint8_t *list,
                          size_t list_size);
+
+#ifdef __AVX2__
+__m256i simdManhattanDistances(const uint8_t *colors_16,
+                               const uint8_t *color);
+SimdRgb simdGetClosestColors(uint8_t *colors, const uint8_t *list,
+                             size_t list_size);
+#endif
+
 void quantizeImage(Image *img, const uint8_t *color_list,
                    size_t color_list_size);
 
@@ -193,12 +217,53 @@ void freeImage(Image *self) {
     free(self->data);
 }
 
-uint32_t squaredEuclidianDistance(const uint8_t *color1,
-                                  const uint8_t *color2)
+#ifdef __AVX2__
+void simdRgbInit(SimdRgb *self, const uint8_t *colors_16) {
+    self->r = _mm256_set_epi16(
+        colors_16[15 * 3], colors_16[14 * 3], colors_16[13 * 3],
+        colors_16[12 * 3], colors_16[11 * 3], colors_16[10 * 3],
+        colors_16[ 9 * 3], colors_16[ 8 * 3], colors_16[ 7 * 3],
+        colors_16[ 6 * 3], colors_16[ 5 * 3], colors_16[ 4 * 3],
+        colors_16[ 3 * 3], colors_16[ 2 * 3], colors_16[ 1 * 3],
+        colors_16[ 0 * 3]
+    );
+
+    self->g = _mm256_set_epi16(
+        colors_16[15 * 3 + 1], colors_16[14 * 3 + 1],
+        colors_16[13 * 3 + 1], colors_16[12 * 3 + 1],
+        colors_16[11 * 3 + 1], colors_16[10 * 3 + 1],
+        colors_16[ 9 * 3 + 1], colors_16[ 8 * 3 + 1],
+        colors_16[ 7 * 3 + 1], colors_16[ 6 * 3 + 1],
+        colors_16[ 5 * 3 + 1], colors_16[ 4 * 3 + 1],
+        colors_16[ 3 * 3 + 1], colors_16[ 2 * 3 + 1],
+        colors_16[ 1 * 3 + 1], colors_16[ 0 * 3 + 1]
+    );
+
+    self->b = _mm256_set_epi16(
+        colors_16[15 * 3 + 2], colors_16[14 * 3 + 2],
+        colors_16[13 * 3 + 2], colors_16[12 * 3 + 2],
+        colors_16[11 * 3 + 2], colors_16[10 * 3 + 2],
+        colors_16[ 9 * 3 + 2], colors_16[ 8 * 3 + 2],
+        colors_16[ 7 * 3 + 2], colors_16[ 6 * 3 + 2],
+        colors_16[ 5 * 3 + 2], colors_16[ 4 * 3 + 2],
+        colors_16[ 3 * 3 + 2], colors_16[ 2 * 3 + 2],
+        colors_16[ 1 * 3 + 2], colors_16[ 0 * 3 + 2]
+    );
+}
+
+void simdRgbInitFromScalar(SimdRgb *self, const uint8_t *color) {
+    self->r = _mm256_set1_epi16(color[0]);
+    self->g = _mm256_set1_epi16(color[1]);
+    self->b = _mm256_set1_epi16(color[2]);
+}
+#endif
+
+uint32_t manhattanDistance(const uint8_t *color1,
+                           const uint8_t *color2)
 {
-    return (color1[0] - color2[0]) * (color1[0] - color2[0]) +
-           (color1[1] - color2[1]) * (color1[1] - color2[1]) +
-           (color1[2] - color2[2]) * (color1[2] - color2[2]);
+    return abs((int)color1[0] - color2[0]) +
+           abs((int)color1[1] - color2[1]) +
+           abs((int)color1[2] - color2[2]);
 }
 
 uint8_t *getClosestColor(uint8_t *color, const uint8_t *list,
@@ -209,7 +274,7 @@ uint8_t *getClosestColor(uint8_t *color, const uint8_t *list,
     uint32_t d;
 
     for (size_t i = 0; i < list_size; i += 3) {
-        d = squaredEuclidianDistance(color, &list[i]);
+        d = manhattanDistance(color, &list[i]);
         if (d > least_distance) {
             continue;
         }
@@ -220,6 +285,39 @@ uint8_t *getClosestColor(uint8_t *color, const uint8_t *list,
 
     return (uint8_t *)out;
 }
+
+#ifdef __AVX2__
+__m256i simdManhattanDistances(const uint8_t *colors_16,
+                               const uint8_t *color)
+{
+    SimdRgb input_rgb;
+    simdRgbInit(&input_rgb, colors_16);
+
+    SimdRgb compare_rgb;
+    simdRgbInitFromScalar(&compare_rgb, color);
+
+    return (__m256i)
+        _mm256_add_epi16(
+            _mm256_add_epi16(
+                _mm256_abs_epi16(
+                    _mm256_sub_epi16(input_rgb.r, compare_rgb.r)
+                ),
+                _mm256_abs_epi16(
+                    _mm256_sub_epi16(input_rgb.r, compare_rgb.r)
+                )
+            ),
+            _mm256_abs_epi16(
+                _mm256_sub_epi16(input_rgb.r, compare_rgb.r)
+            )
+        );
+}
+
+SimdRgb simdGetClosestColors(uint8_t *colors, const uint8_t *list,
+                             size_t list_size)
+{
+
+}
+#endif
 
 void quantizeImage(Image *img, const uint8_t *color_list,
                    size_t color_list_size)
@@ -244,7 +342,7 @@ void quantizeImage(Image *img, const uint8_t *color_list,
         p[2] = result[2];
 
         if (i % 3000 == 0) {
-            // i + img->bytes because I've completed a the
+            // i + img->bytes, because ptr has already completed
             // calculation on a pixel when printing.
             fprintf(stdout, "progress: %lu/%lu (%.0lf%%)\r",
                     i + img->bytes,

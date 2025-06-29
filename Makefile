@@ -1,5 +1,5 @@
 SRC:=src/*.c
-LIBS:= -lm
+LIBS:= -lm -mavx2
 SRC_LIBS:=lib/argparse.c
 INCLUDE_DIR:=-I"include/"
 EXE:=iif
