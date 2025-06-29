@@ -3,6 +3,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#define _BETTER_LSP_SUGGESTIONS_
+
+#ifdef _BETTER_LSP_SUGGESTIONS_
+#define __AVX2__
+#endif
+
 #ifdef __AVX2__
 #include <immintrin.h>
 #endif
@@ -59,8 +65,8 @@ uint8_t *getClosestColor(uint8_t *color, const uint8_t *list,
 #ifdef __AVX2__
 __m256i simdManhattanDistances(const uint8_t *colors_16,
                                const uint8_t *color);
-SimdRgb simdGetClosestColors(uint8_t *colors, const uint8_t *list,
-                             size_t list_size);
+void simdGetClosestColors(uint8_t *colors_16, const uint8_t *list,
+                          size_t list_size, SimdRgb *out);
 #endif
 
 void quantizeImage(Image *img, const uint8_t *color_list,
@@ -303,19 +309,20 @@ __m256i simdManhattanDistances(const uint8_t *colors_16,
                     _mm256_sub_epi16(input_rgb.r, compare_rgb.r)
                 ),
                 _mm256_abs_epi16(
-                    _mm256_sub_epi16(input_rgb.r, compare_rgb.r)
+                    _mm256_sub_epi16(input_rgb.g, compare_rgb.g)
                 )
             ),
             _mm256_abs_epi16(
-                _mm256_sub_epi16(input_rgb.r, compare_rgb.r)
+                _mm256_sub_epi16(input_rgb.b, compare_rgb.b)
             )
         );
 }
 
-SimdRgb simdGetClosestColors(uint8_t *colors, const uint8_t *list,
-                             size_t list_size)
+void simdGetClosestColors(uint8_t *colors_16, const uint8_t *list,
+                          size_t list_size, SimdRgb *out)
 {
 
+    
 }
 #endif
 
